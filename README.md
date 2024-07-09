@@ -1,1 +1,89 @@
-# RedditMetrics
+## RedditMetrics
+RedditMetrics by Thomas Franey
+
+
+Project hours: Reasearching and fighting Reddit API, and .net open source changes on azure functions for most part.
+               Architecting bewteen othe revents within last few weeks.
+ 
+
+
+Project: Multi-Factpr microservice architecture with Kafka and Azure influence. N-tier libraries
+         .Net core 8.0 style dependency injection (domain approach)
+          comminication by API and Kafka message queues.
+          use of minamum API structure for .net 8.0
+
+
+
+--wish list before time ran out
+
+Wishlist : Reddit Authentication does not wrk or there is no proper instructions (so for now used the config file to store token)
+          Token may not work after authenticating in postman.
+          need more time to clean up constant strings.
+          wanted to add interrupts for all api actions. (domain develp0ment approach)
+          wanted a client side api that talks to the reporter, but now just use reporter to grab the data (wanted signalR as well)
+          withtout Reddit oauth, cannot setup for full load of new posts to record all users in subreddit (etc) 
+           
+
+
+download postman for API tests
+
+
+setting up kafka: use c:\KafKa , install Java
+follin instructions (use c:\kafka): https://dzone.com/articles/running-apache-kafka-on-windows-os
+
+starts Kafka:
+.\bin\windows\zookeeper-server-start.bat .\config\zookeeper.properties
+
+.\bin\windows\kafka-server-start.bat .\config\server.properties
+
+add topics if you have not yet:
+.\bin\windows\kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic posts-new --from-beginning  
+.\bin\windows\kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic posts-hot --from-beginning 
+.\bin\windows\kafka-console-consumer.bat --bootstrap-server localhost:9092 --topic posts-top --from-beginning 
+
+shows what topics are registered. (it will stay on your system)
+.\bin\windows\kafka-topics.bat --list --bootstrap-server localhost:9092
+
+
+Requirements.
+Visual studios 2022 - c# 12
+Install Azure functions in VS installer to acquire azure ability and Azurite
+Azurite should be part of VS 2022.
+
+Project was meant to be split into multiple solutions, but decide to keep nder one for easy git cloning.
+under solutions property, set multiple project to start on RedditMetricsFuncs (azure functions),
+RedditMetricsOrchestrator (timing chain to call multiple requests to functions to throttle),
+RedditMetricsSmartREporter (buckes the Kafka messages into metrics to diplay through API)
+
+in appsettings.Json for Orchestartor, is where to set your nodes (or branches of API calls to the http triggers)
+ex:
+
+ "apiHost": "http://localhost:7125",
+ "MyRedditBranches": [
+   [ "funny", "NewPost", "eyJhbGciOiJSUzI1NiIsImtpZCI6IlNIQTI1NjpzS3dsMnlsV0VtMjVmcXhwTU40cWY4MXE2OWFFdWFyMnpLMUdhVGxjdWNZIiwidHlwIjoiSldUIn0.eyJzdWIiOiJsb2lkIiwiZXhwIjoxNzIwNTYzMTY5Ljc3MzQxOCwiaWF0IjoxNzIwNDc2NzY5Ljc3MzQxOCwianRpIjoiZWxhSGJ3R0hGSjVvWkcyc3VlMlAyU3FoVmpPRldRIiwiY2lkIjoiMFItV0FNaHVvby1NeVEiLCJsaWQiOiJ0Ml8xNDUzNGRjNmdoIiwibGNhIjoxNzIwNDc2NDE1MTc3LCJzY3AiOiJlSnhra2RHT3REQUloZC1sMXo3Ql95cF9OaHRzY1lhc0xRYW9rM243RFZvY2s3MDdjTDRpSFA4bktJcUZMRTJ1QktHa0tXRUZXdE9VTmlMdjU4eTlPWkVGU3lGVFI4NDN5d29rYVVwUFVtTjVweWxSd1daa0xsZmFzVUtEQjZZcFZTNloyMEtQUzV2UTNJMUZ6MDZNcWx4V0h0VFlvM0pwYkdNSzJ4UGp6Y1pxUXlxdXk2bE1ZRmtvbjhXTGZ2eUctdFktZjdiZmhIWXdyS2dLRF9UT3VGeHdZX0hERkhiX25wcjBiRjJ3cUwzWGc5US0xLU4yN2JObW9kbTVfVnpQdnphU2NUbUc1aWZZdjd0LUNSMTQ1SG1aVVFjd1lnMF95ckFqNl9Ddk9vREtCUVdNSlloUEk1QXJsMl9fSmRpdVRmOGF0eWQtLUdiRVRXXzRyUm1vNXhMRW9VX2o2emNBQVBfX1hEX2U0dyIsImZsbyI6MX0.Lq0EHAa5jfTqWoiqC3U3zsXI6Ag9wZk7OB82UBMvgojH0yKwrBxq2ojoChpSA5NWjq25mbC8ZsMyw5UrFZoWHFmXFLvBPtoQSx0QECEpFTK1RMgxAEWKRGhyRaovvaWbj1pS8868KnJ0U3_1wzKoBTkuq5oBPv0AHYqgpM6HXjvt8f0HVd3HZ1Rk2hRKaCnc3ldsx2tMHuxXlFtyOL0X7URy3xkl4cLfNbsWGuKpJX4ZzaQkBalzVCkxjXq-828_hjxTtNApj1tiWhnxTw_dBNAgY5pyT7MYQqaEEiFmHzYBnMvLdo23zrmvXAFmNZQk8hjV-061A5s7xBUTgrpcoQ", "100" ],
+   [ "science", "NewPost", "eyJhbGciOiJSUzI1NiIsImtpZCI6IlNIQTI1NjpzS3dsMnlsV0VtMjVmcXhwTU40cWY4MXE2OWFFdWFyMnpLMUdhVGxjdWNZIiwidHlwIjoiSldUIn0.eyJzdWIiOiJsb2lkIiwiZXhwIjoxNzIwNTYzMTY5Ljc3MzQxOCwiaWF0IjoxNzIwNDc2NzY5Ljc3MzQxOCwianRpIjoiZWxhSGJ3R0hGSjVvWkcyc3VlMlAyU3FoVmpPRldRIiwiY2lkIjoiMFItV0FNaHVvby1NeVEiLCJsaWQiOiJ0Ml8xNDUzNGRjNmdoIiwibGNhIjoxNzIwNDc2NDE1MTc3LCJzY3AiOiJlSnhra2RHT3REQUloZC1sMXo3Ql95cF9OaHRzY1lhc0xRYW9rM243RFZvY2s3MDdjTDRpSFA4bktJcUZMRTJ1QktHa0tXRUZXdE9VTmlMdjU4eTlPWkVGU3lGVFI4NDN5d29rYVVwUFVtTjVweWxSd1daa0xsZmFzVUtEQjZZcFZTNloyMEtQUzV2UTNJMUZ6MDZNcWx4V0h0VFlvM0pwYkdNSzJ4UGp6Y1pxUXlxdXk2bE1ZRmtvbjhXTGZ2eUctdFktZjdiZmhIWXdyS2dLRF9UT3VGeHdZX0hERkhiX25wcjBiRjJ3cUwzWGc5US0xLU4yN2JObW9kbTVfVnpQdnphU2NUbUc1aWZZdjd0LUNSMTQ1SG1aVVFjd1lnMF95ckFqNl9Ddk9vREtCUVdNSlloUEk1QXJsMl9fSmRpdVRmOGF0eWQtLUdiRVRXXzRyUm1vNXhMRW9VX2o2emNBQVBfX1hEX2U0dyIsImZsbyI6MX0.Lq0EHAa5jfTqWoiqC3U3zsXI6Ag9wZk7OB82UBMvgojH0yKwrBxq2ojoChpSA5NWjq25mbC8ZsMyw5UrFZoWHFmXFLvBPtoQSx0QECEpFTK1RMgxAEWKRGhyRaovvaWbj1pS8868KnJ0U3_1wzKoBTkuq5oBPv0AHYqgpM6HXjvt8f0HVd3HZ1Rk2hRKaCnc3ldsx2tMHuxXlFtyOL0X7URy3xkl4cLfNbsWGuKpJX4ZzaQkBalzVCkxjXq-828_hjxTtNApj1tiWhnxTw_dBNAgY5pyT7MYQqaEEiFmHzYBnMvLdo23zrmvXAFmNZQk8hjV-061A5s7xBUTgrpcoQ", "100" ],
+   [ "funny", "HotPost", "eyJhbGciOiJSUzI1NiIsImtpZCI6IlNIQTI1NjpzS3dsMnlsV0VtMjVmcXhwTU40cWY4MXE2OWFFdWFyMnpLMUdhVGxjdWNZIiwidHlwIjoiSldUIn0.eyJzdWIiOiJsb2lkIiwiZXhwIjoxNzIwNTYzMTY5Ljc3MzQxOCwiaWF0IjoxNzIwNDc2NzY5Ljc3MzQxOCwianRpIjoiZWxhSGJ3R0hGSjVvWkcyc3VlMlAyU3FoVmpPRldRIiwiY2lkIjoiMFItV0FNaHVvby1NeVEiLCJsaWQiOiJ0Ml8xNDUzNGRjNmdoIiwibGNhIjoxNzIwNDc2NDE1MTc3LCJzY3AiOiJlSnhra2RHT3REQUloZC1sMXo3Ql95cF9OaHRzY1lhc0xRYW9rM243RFZvY2s3MDdjTDRpSFA4bktJcUZMRTJ1QktHa0tXRUZXdE9VTmlMdjU4eTlPWkVGU3lGVFI4NDN5d29rYVVwUFVtTjVweWxSd1daa0xsZmFzVUtEQjZZcFZTNloyMEtQUzV2UTNJMUZ6MDZNcWx4V0h0VFlvM0pwYkdNSzJ4UGp6Y1pxUXlxdXk2bE1ZRmtvbjhXTGZ2eUctdFktZjdiZmhIWXdyS2dLRF9UT3VGeHdZX0hERkhiX25wcjBiRjJ3cUwzWGc5US0xLU4yN2JObW9kbTVfVnpQdnphU2NUbUc1aWZZdjd0LUNSMTQ1SG1aVVFjd1lnMF95ckFqNl9Ddk9vREtCUVdNSlloUEk1QXJsMl9fSmRpdVRmOGF0eWQtLUdiRVRXXzRyUm1vNXhMRW9VX2o2emNBQVBfX1hEX2U0dyIsImZsbyI6MX0.Lq0EHAa5jfTqWoiqC3U3zsXI6Ag9wZk7OB82UBMvgojH0yKwrBxq2ojoChpSA5NWjq25mbC8ZsMyw5UrFZoWHFmXFLvBPtoQSx0QECEpFTK1RMgxAEWKRGhyRaovvaWbj1pS8868KnJ0U3_1wzKoBTkuq5oBPv0AHYqgpM6HXjvt8f0HVd3HZ1Rk2hRKaCnc3ldsx2tMHuxXlFtyOL0X7URy3xkl4cLfNbsWGuKpJX4ZzaQkBalzVCkxjXq-828_hjxTtNApj1tiWhnxTw_dBNAgY5pyT7MYQqaEEiFmHzYBnMvLdo23zrmvXAFmNZQk8hjV-061A5s7xBUTgrpcoQ", "25" ],
+   [ "funny", "TopPost", "eyJhbGciOiJSUzI1NiIsImtpZCI6IlNIQTI1NjpzS3dsMnlsV0VtMjVmcXhwTU40cWY4MXE2OWFFdWFyMnpLMUdhVGxjdWNZIiwidHlwIjoiSldUIn0.eyJzdWIiOiJsb2lkIiwiZXhwIjoxNzIwNTYzMTY5Ljc3MzQxOCwiaWF0IjoxNzIwNDc2NzY5Ljc3MzQxOCwianRpIjoiZWxhSGJ3R0hGSjVvWkcyc3VlMlAyU3FoVmpPRldRIiwiY2lkIjoiMFItV0FNaHVvby1NeVEiLCJsaWQiOiJ0Ml8xNDUzNGRjNmdoIiwibGNhIjoxNzIwNDc2NDE1MTc3LCJzY3AiOiJlSnhra2RHT3REQUloZC1sMXo3Ql95cF9OaHRzY1lhc0xRYW9rM243RFZvY2s3MDdjTDRpSFA4bktJcUZMRTJ1QktHa0tXRUZXdE9VTmlMdjU4eTlPWkVGU3lGVFI4NDN5d29rYVVwUFVtTjVweWxSd1daa0xsZmFzVUtEQjZZcFZTNloyMEtQUzV2UTNJMUZ6MDZNcWx4V0h0VFlvM0pwYkdNSzJ4UGp6Y1pxUXlxdXk2bE1ZRmtvbjhXTGZ2eUctdFktZjdiZmhIWXdyS2dLRF9UT3VGeHdZX0hERkhiX25wcjBiRjJ3cUwzWGc5US0xLU4yN2JObW9kbTVfVnpQdnphU2NUbUc1aWZZdjd0LUNSMTQ1SG1aVVFjd1lnMF95ckFqNl9Ddk9vREtCUVdNSlloUEk1QXJsMl9fSmRpdVRmOGF0eWQtLUdiRVRXXzRyUm1vNXhMRW9VX2o2emNBQVBfX1hEX2U0dyIsImZsbyI6MX0.Lq0EHAa5jfTqWoiqC3U3zsXI6Ag9wZk7OB82UBMvgojH0yKwrBxq2ojoChpSA5NWjq25mbC8ZsMyw5UrFZoWHFmXFLvBPtoQSx0QECEpFTK1RMgxAEWKRGhyRaovvaWbj1pS8868KnJ0U3_1wzKoBTkuq5oBPv0AHYqgpM6HXjvt8f0HVd3HZ1Rk2hRKaCnc3ldsx2tMHuxXlFtyOL0X7URy3xkl4cLfNbsWGuKpJX4ZzaQkBalzVCkxjXq-828_hjxTtNApj1tiWhnxTw_dBNAgY5pyT7MYQqaEEiFmHzYBnMvLdo23zrmvXAFmNZQk8hjV-061A5s7xBUTgrpcoQ", "25" ],
+   [ "science", "HotPost", "eyJhbGciOiJSUzI1NiIsImtpZCI6IlNIQTI1NjpzS3dsMnlsV0VtMjVmcXhwTU40cWY4MXE2OWFFdWFyMnpLMUdhVGxjdWNZIiwidHlwIjoiSldUIn0.eyJzdWIiOiJsb2lkIiwiZXhwIjoxNzIwNTYzMTY5Ljc3MzQxOCwiaWF0IjoxNzIwNDc2NzY5Ljc3MzQxOCwianRpIjoiZWxhSGJ3R0hGSjVvWkcyc3VlMlAyU3FoVmpPRldRIiwiY2lkIjoiMFItV0FNaHVvby1NeVEiLCJsaWQiOiJ0Ml8xNDUzNGRjNmdoIiwibGNhIjoxNzIwNDc2NDE1MTc3LCJzY3AiOiJlSnhra2RHT3REQUloZC1sMXo3Ql95cF9OaHRzY1lhc0xRYW9rM243RFZvY2s3MDdjTDRpSFA4bktJcUZMRTJ1QktHa0tXRUZXdE9VTmlMdjU4eTlPWkVGU3lGVFI4NDN5d29rYVVwUFVtTjVweWxSd1daa0xsZmFzVUtEQjZZcFZTNloyMEtQUzV2UTNJMUZ6MDZNcWx4V0h0VFlvM0pwYkdNSzJ4UGp6Y1pxUXlxdXk2bE1ZRmtvbjhXTGZ2eUctdFktZjdiZmhIWXdyS2dLRF9UT3VGeHdZX0hERkhiX25wcjBiRjJ3cUwzWGc5US0xLU4yN2JObW9kbTVfVnpQdnphU2NUbUc1aWZZdjd0LUNSMTQ1SG1aVVFjd1lnMF95ckFqNl9Ddk9vREtCUVdNSlloUEk1QXJsMl9fSmRpdVRmOGF0eWQtLUdiRVRXXzRyUm1vNXhMRW9VX2o2emNBQVBfX1hEX2U0dyIsImZsbyI6MX0.Lq0EHAa5jfTqWoiqC3U3zsXI6Ag9wZk7OB82UBMvgojH0yKwrBxq2ojoChpSA5NWjq25mbC8ZsMyw5UrFZoWHFmXFLvBPtoQSx0QECEpFTK1RMgxAEWKRGhyRaovvaWbj1pS8868KnJ0U3_1wzKoBTkuq5oBPv0AHYqgpM6HXjvt8f0HVd3HZ1Rk2hRKaCnc3ldsx2tMHuxXlFtyOL0X7URy3xkl4cLfNbsWGuKpJX4ZzaQkBalzVCkxjXq-828_hjxTtNApj1tiWhnxTw_dBNAgY5pyT7MYQqaEEiFmHzYBnMvLdo23zrmvXAFmNZQk8hjV-061A5s7xBUTgrpcoQ", "25" ],
+   [ "science", "TopPost", "eyJhbGciOiJSUzI1NiIsImtpZCI6IlNIQTI1NjpzS3dsMnlsV0VtMjVmcXhwTU40cWY4MXE2OWFFdWFyMnpLMUdhVGxjdWNZIiwidHlwIjoiSldUIn0.eyJzdWIiOiJsb2lkIiwiZXhwIjoxNzIwNTYzMTY5Ljc3MzQxOCwiaWF0IjoxNzIwNDc2NzY5Ljc3MzQxOCwianRpIjoiZWxhSGJ3R0hGSjVvWkcyc3VlMlAyU3FoVmpPRldRIiwiY2lkIjoiMFItV0FNaHVvby1NeVEiLCJsaWQiOiJ0Ml8xNDUzNGRjNmdoIiwibGNhIjoxNzIwNDc2NDE1MTc3LCJzY3AiOiJlSnhra2RHT3REQUloZC1sMXo3Ql95cF9OaHRzY1lhc0xRYW9rM243RFZvY2s3MDdjTDRpSFA4bktJcUZMRTJ1QktHa0tXRUZXdE9VTmlMdjU4eTlPWkVGU3lGVFI4NDN5d29rYVVwUFVtTjVweWxSd1daa0xsZmFzVUtEQjZZcFZTNloyMEtQUzV2UTNJMUZ6MDZNcWx4V0h0VFlvM0pwYkdNSzJ4UGp6Y1pxUXlxdXk2bE1ZRmtvbjhXTGZ2eUctdFktZjdiZmhIWXdyS2dLRF9UT3VGeHdZX0hERkhiX25wcjBiRjJ3cUwzWGc5US0xLU4yN2JObW9kbTVfVnpQdnphU2NUbUc1aWZZdjd0LUNSMTQ1SG1aVVFjd1lnMF95ckFqNl9Ddk9vREtCUVdNSlloUEk1QXJsMl9fSmRpdVRmOGF0eWQtLUdiRVRXXzRyUm1vNXhMRW9VX2o2emNBQVBfX1hEX2U0dyIsImZsbyI6MX0.Lq0EHAa5jfTqWoiqC3U3zsXI6Ag9wZk7OB82UBMvgojH0yKwrBxq2ojoChpSA5NWjq25mbC8ZsMyw5UrFZoWHFmXFLvBPtoQSx0QECEpFTK1RMgxAEWKRGhyRaovvaWbj1pS8868KnJ0U3_1wzKoBTkuq5oBPv0AHYqgpM6HXjvt8f0HVd3HZ1Rk2hRKaCnc3ldsx2tMHuxXlFtyOL0X7URy3xkl4cLfNbsWGuKpJX4ZzaQkBalzVCkxjXq-828_hjxTtNApj1tiWhnxTw_dBNAgY5pyT7MYQqaEEiFmHzYBnMvLdo23zrmvXAFmNZQk8hjV-061A5s7xBUTgrpcoQ", "25" ]
+ ]
+
+subreddit name, the action (Newpost,TopPost,HotPost), and your reddit token, limit of records to pull per hit.
+apiHost points the the http functions (RedditMetricsFunc) to access the backend reddit data
+
+after this: run project, should have 3 windows
+
+
+testing front end API from reporter:
+determine your pot numer for front end spi (xxxx) - most likely 7020
+
+to get single metrics like hottest post, top contributer, etc for subreddit r/funny (https://localhost:7020/api/metrics/funny).
+
+to list tables of top 25
+https://localhost:7020/api/top/funny (top posts in votes)
+https://localhost:7020/api/hot/funny (hottest posts , shoulde for comment count?)
+https://localhost:7020/api/new/funny (top 100 new posts) -- sorry there is no full list to analyze all contributer post count yet.
+https://localhost:7020/api/BestAuthors/funny (contributers with the highest posts - based on current 100 new posts loaded in bucket)
+
+azuzu77@yahoo.com is ny email.
+
