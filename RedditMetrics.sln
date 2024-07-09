@@ -1,0 +1,54 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34601.278
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedditMetricsSmartReporter", "RedditMetricsSmartReporter\RedditMetricsSmartReporter.csproj", "{8D9B35B6-A5D2-4E44-9540-DDC6F866D61C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedditMetricsFuncs", "RedditMetricsFuncs\RedditMetricsFuncs.csproj", "{C1E2936D-D5C3-4974-9341-48DFDA2D6214}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedditMetricsOrchestrator", "RedditMetricsOrchestrator\RedditMetricsOrchestrator.csproj", "{3997FA70-EB16-4ADC-9872-47EC5BE7986A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedditMetrics.Business", "RedditMetric.Business\RedditMetrics.Business.csproj", "{646EBB34-F7C7-4586-89F0-9C2790C82CA1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RedditMetrics.DataLayer", "RedditMetrics.DataLayer\RedditMetrics.DataLayer.csproj", "{4B89A9E0-23B0-4E4B-B7EC-9FDA4859C8C9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C1DDAFF9-BF1A-4AE4-B5BD-96E81D80AEDB}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\..\OneDrive\Desktop\Read.me = ..\..\..\OneDrive\Desktop\Read.me
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8D9B35B6-A5D2-4E44-9540-DDC6F866D61C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D9B35B6-A5D2-4E44-9540-DDC6F866D61C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D9B35B6-A5D2-4E44-9540-DDC6F866D61C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D9B35B6-A5D2-4E44-9540-DDC6F866D61C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1E2936D-D5C3-4974-9341-48DFDA2D6214}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1E2936D-D5C3-4974-9341-48DFDA2D6214}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1E2936D-D5C3-4974-9341-48DFDA2D6214}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1E2936D-D5C3-4974-9341-48DFDA2D6214}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3997FA70-EB16-4ADC-9872-47EC5BE7986A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3997FA70-EB16-4ADC-9872-47EC5BE7986A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3997FA70-EB16-4ADC-9872-47EC5BE7986A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3997FA70-EB16-4ADC-9872-47EC5BE7986A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{646EBB34-F7C7-4586-89F0-9C2790C82CA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{646EBB34-F7C7-4586-89F0-9C2790C82CA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{646EBB34-F7C7-4586-89F0-9C2790C82CA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{646EBB34-F7C7-4586-89F0-9C2790C82CA1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B89A9E0-23B0-4E4B-B7EC-9FDA4859C8C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B89A9E0-23B0-4E4B-B7EC-9FDA4859C8C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B89A9E0-23B0-4E4B-B7EC-9FDA4859C8C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B89A9E0-23B0-4E4B-B7EC-9FDA4859C8C9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {61F3AEDB-B972-4CF1-8062-64BC7B564B0E}
+	EndGlobalSection
+EndGlobal
