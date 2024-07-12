@@ -5,7 +5,7 @@
 #Project hours: Reasearching and fighting Reddit API, and .net open source changes on azure functions for most part.
                Architecting bewteen othe revents within last few weeks.
 
-#UPDATE: Fixed a way to Authenticate by user id and password
+#UPDATE: Fixed a way to Authenticate by user id and password. it searches all new posts for users now (reddit paging itself is buggy)
  
 
 
@@ -24,7 +24,7 @@
 ##          FIXED SOME: need more time to clean up constant strings.
 ##          wanted to add interrupts for all api actions. (domain develp0ment approach)
 ##          wanted a client side api that talks to the reporter, but now just use reporter to grab the data (wanted signalR as well)
-#3          NOT COMPLETED: withtout Reddit oauth, cannot setup for full load of new posts to record all users in subreddit (etc) 
+
            
 
 
