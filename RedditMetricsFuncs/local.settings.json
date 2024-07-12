@@ -1,0 +1,12 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "PRODUCERSERVER": "localhost:9092",
+    "AuthAPI": "https://ssl.reddit.com/api/v1/access_token",
+    "ReadAPI": "https://oauth.reddit.com/r/{0}/{1}?count={2}&limit={2}",
+    "ReadAPINext": "https://oauth.reddit.com/r/{0}/{1}?count={2}&limit={2}&after{3}",
+    "ReadTopNew": "https://oauth.reddit.com/r/{0}/{1}?count={2}&limit={2}&before{3}"
+  }    
+  } 
