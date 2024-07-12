@@ -2,102 +2,75 @@
 using RedditMetrics.DataLayer.Models;
 using RedditMetrics.DataLayer.Interfaces;
 using Microsoft.Extensions.Logging;
-using Microsoft.Azure.Functions.Worker.Http;
-
-using QUERYCONST = RedditMetrics.DataLayer.FunctionConstants.Query;
 using ERRORS = RedditMetrics.DataLayer.FunctionConstants.ErrorMessages;
 using MESSAGES = RedditMetrics.DataLayer.FunctionConstants.Messages;
-using CONST = RedditMetrics.DataLayer.FunctionConstants;
-
+using COMMON = RedditMetrics.DataLayer.FunctionConstants.CommonMessages;
 
 namespace RedditMetrics.Business
 {
     public class ReaderFunction
-    {
-        public static async Task<HeaderData?> ExecuteSubRedditReader(HttpRequestData req, ILogger logger, IProducerWrapper producer,
-                                                                     IRedditReader reader,  string action)  
+    {       
+        public static async Task<HeaderData?> ExecuteSubRedditReader(RequestParameterManager req, ILogger logger, IProducerWrapper producer,
+                                                                     IRedditReader reader,  string action, string topic, string logString)  
         {
             ISubredditResult? queuedMessage = null;
-            IHeaderData? result;
+            string sub = req.Name ?? string.Empty;
 
-            string logMessage = action;
-            string topic = GetProducerTopic(action);
-            string? name = req?.Query[QUERYCONST.SUBREDDITNAME];
-            string? count = req?.Query[QUERYCONST.COUNT];
-            string? before = req?.Query[QUERYCONST.PAGEBEFORE];
-            string? after = req?.Query[QUERYCONST.PAGEAFTER];
-            string? token = req?.Query[QUERYCONST.TOKEN];
+            _ = int.TryParse(req.Count, out int cnt);
+
+            IHeaderData? result = new HeaderData() { SubRedditName = sub, Action = action, Status = -2, Message = ERRORS.NOSERVICE };
+
+            logger.LogInformation(COMMON.LOGMESSAGE, string.Format(logString, sub, req.Count, AppendPagingToLog(req.Before, req.After)));
             try
             {
-
-                dynamic? data = null;
-                if (req != null)
-                {
-                    string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-                    data = JsonConvert.DeserializeObject(requestBody);
-                }
-                name ??= data?.name ?? @"all";
-                count ??= data?.count ?? @"100";
-                before ??= data?.before;
-                after ??= data?.after;
-                token ??= data?.token ?? string.Empty;
-
-
-                logMessage = PrepareLog(action, count, name, before, after);
-                if (string.IsNullOrEmpty(logMessage))
-                    result = new HeaderData() { Status = -1, Action = action, SubRedditName = name, Message = string.Format(ERRORS.NOACTION, name) };
-                else
-                {
-                    logger.LogInformation(@"{Message}", logMessage);
-                    
-                    if (reader == null)
-                        result = new HeaderData() { SubRedditName = name, Action = action, Status = -1, Message = ERRORS.NOSERVICE };
-                    else
-                    {
-                        (queuedMessage, result) = await reader.ReadQuery(logger, name, logMessage,action, token, Convert.ToInt32(count));
-                    }
-                }
-            }           
+                (queuedMessage, result) = reader == null? (null,result) :
+                                                           await reader.ReadQuery(logger, sub, logString, action, req.Authdata, cnt,req.Before, req.After);                
+            }
             catch (Exception ex)
-            {
-                logMessage = $"{logMessage} \n Error: {ex.Message}";
-                logger.LogError(@"{Message}", logMessage);
-                result = new HeaderData() { Action = action, SubRedditName = name ?? string.Empty, Status = -2, Message = ex.Message };
+            {              
+                logger.LogError(COMMON.LOGMESSAGE, $"{logString} \n {COMMON.ERROR}: {ex.Message}");
+                result = new HeaderData() { Action = action, SubRedditName = sub, Status = -2, Message = ex.Message };
             }
 
-            if (!string.IsNullOrEmpty(topic) && queuedMessage != null) {
-                try
-                {                   
-                    await producer.WriteMessage(topic, JsonConvert.SerializeObject((SubredditResult) queuedMessage));
-                }
-                catch
-                {
-                    result = new HeaderData() { Status = -3, Message = ERRORS.KAFKAFAILURE, Action = action, SubRedditName = name ?? string.Empty };
-                }
+            if (!string.IsNullOrEmpty(topic) && queuedMessage != null)
+            {
+                try { await producer.WriteMessage(topic, JsonConvert.SerializeObject((SubredditResult)queuedMessage)); }
+                catch { result = new HeaderData() { Status = -3, Message = ERRORS.KAFKAFAILURE, Action = action, SubRedditName = sub }; }
             }
+
             return (HeaderData?) result;
         }
 
-        protected static string GetProducerTopic(string action) => 
-            action switch
-            {
-                QUERYCONST.HOTACTION => CONST.POSTS_HOT,
-                QUERYCONST.TOPACTION => CONST.POSTS_TOP,
-                QUERYCONST.NEWACTION => CONST.POSTS_NEW,
-                _ => string.Empty
-            };        
+        public static async Task<IHeaderData?> PostAuthToReader(RequestParameterManager req, ILogger logger, IRedditReader reader, string logString)
+        {          
+            IHeaderData? result = new HeaderData() { SubRedditName = MESSAGES.AUTHLOG, Action = MESSAGES.AUTHLOG, Status = -2, Message = ERRORS.NOSERVICE };
+            string sub = req.Name ?? string.Empty;
 
-        private static string PrepareLog(string action, string count, string name, string? before, string? after) =>
-            action switch
+            if (reader == null) return result;
+            try
             {
-                QUERYCONST.HOTACTION => string.Format(MESSAGES.HOTLOG, name, count),
-                QUERYCONST.TOPACTION => string.Format(MESSAGES.TOPVOTELOG, name, count),
-                QUERYCONST.NEWACTION => !string.IsNullOrEmpty(after) ?
-                                            string.Format(MESSAGES.NEXTPAGELOG, name, after) :
-                                        !string.IsNullOrEmpty(before) ?
-                                            string.Format(MESSAGES.LATESTLOG, name, before) :
-                                            string.Format(MESSAGES.NEWLOG, name),
-                _ => string.Empty,
-            };        
+
+                logger.LogInformation(COMMON.LOGMESSAGE, logString);
+                if (!string.IsNullOrWhiteSpace(req?.Login) && !string.IsNullOrWhiteSpace(req?.Authdata))
+                {
+                    result = reader == null ? result : await reader.TryAuth(logger, sub, req.Login, req.Authdata);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                logString = $"{logString} \n {COMMON.ERROR}: {ex.Message}";
+                logger.LogError(COMMON.LOGMESSAGE, logString);
+                result = new HeaderData() { Action = sub, SubRedditName = sub, Status = -2, Message = ex.Message };
+            }
+            return result;
+        }
+
+
+        private static string AppendPagingToLog( string? before, string? after) {
+            return (!string.IsNullOrEmpty(after)) ? string.Format(MESSAGES.NEXTPAGELOG, after) :
+                   (!string.IsNullOrEmpty(before)) ? string.Format(MESSAGES.LATESTLOG,  before) :
+                    string.Empty;               
+       }      
     }
 }

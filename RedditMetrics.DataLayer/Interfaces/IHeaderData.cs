@@ -8,9 +8,10 @@
         string? Before { get; set; } 
         int Status { get; set; }     
         string Message { get; set; }
-        string? Token { get; set; }
+        ITokenHeader? TokenData { get; set; }        
         int Remaining { get; set; }     
         int Reset { get; set; }     
-        int SecondsDelay { get; }
+        int MilisecondsDelay { get; }
+        string? TokenReturned { get; }
     }
 }

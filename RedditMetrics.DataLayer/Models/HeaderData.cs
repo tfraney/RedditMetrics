@@ -8,35 +8,38 @@ namespace RedditMetrics.DataLayer.Models
 {
     public class HeaderData : IHeaderData
     {
-        [JsonPropertyName(CONST.Action)]
+        [JsonPropertyName(CONST.ACTIONS)]
         public required string Action { get; set; }
 
-        [JsonPropertyName(CONST.SubRedditName)]
+        [JsonPropertyName(CONST.SUBREDDITNAME)]
         public required string SubRedditName { get; set; }
 
         [JsonPropertyName(RESCONST.AFTER)]
         public string? After { get; set; }
 
-        [JsonPropertyName(COMMON.TOKEN)]
-        public string? Token { get; set; }
+        [JsonPropertyName(COMMON.TOKENDATA)]
+        public ITokenHeader? TokenData { get; set;  } = new TokenHeader();    
 
         [JsonPropertyName(RESCONST.BEFORE)]
         public string? Before { get; set; }
 
         [JsonPropertyName(COMMON.STATUS)]
-        public int Status { get; set; } = -1;
+        public int Status { get; set; } = -2;
 
         [JsonPropertyName(COMMON.MESSAGE)]
         public required string Message { get; set; }
 
-        [JsonPropertyName(CONST.Remaining)]
+        [JsonPropertyName(COMMON.REMAINING)]
         public int Remaining { get; set; } = 100;
 
-        [JsonPropertyName(CONST.Reset)]
+        [JsonPropertyName(COMMON.RESET)]
         public int Reset { get; set; } = 100;
 
-        [JsonPropertyName(CONST.Seconds)]
+        
         [JsonIgnore]
-        public int SecondsDelay { get => (int) Math.Round((double)(Reset + 1) / Remaining) * 5; }
+        public int MilisecondsDelay { get => (int) Math.Round((double)((Reset*1000) + 1) / (Remaining*1000)) + 50; }
+                
+        [JsonIgnore]
+        public string? TokenReturned { get => TokenData?.ReturnedToken; }
     }
 }

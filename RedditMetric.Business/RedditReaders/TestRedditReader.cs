@@ -4,13 +4,29 @@ using Newtonsoft.Json;
 using RedditMetrics.DataLayer.Interfaces;
 using CONST = RedditMetrics.DataLayer.FunctionConstants;
 using Microsoft.Extensions.Logging;
+using System.Security.Authentication;
+using Microsoft.Extensions.Configuration;
 
 namespace RedditMetrics.Business.RedditReaders
 {
-    public class TestRedditReader : BaseRedditReader
+    public class TestRedditReader() : BaseRedditReader()
     {
+        public override async Task<IHeaderData> TryAuth(ILogger logger, string client_name, string loginData, string basicauth)
+        {
+            return await Task.Run(() =>
+            {
+                logger.LogInformation(@"TEST");
+                return new HeaderData()
+                {
+                    SubRedditName = client_name,
+                    Action = $"{loginData}{basicauth}",
+                    Message = @"OK",
+                    TokenData = new TokenHeader() { Token = basicauth }
+                };
+            });
+        }
         public override async Task<(ISubredditResult?,IHeaderData?)> ReadQuery(ILogger logger, string subreddit, string log,
-                                                                               string action, string token, int cnt)
+                                                                               string action, string authdata, int cnt, string? before, string? after)
         {          
             var msg = $"Success. Test Api = {subreddit}-{action}";
             var status = 0;
@@ -19,6 +35,8 @@ namespace RedditMetrics.Business.RedditReaders
             IHeaderData? headerData = null;
             try
             {
+                if (string.IsNullOrEmpty(authdata)) { throw new AuthenticationException(); }
+
                 post = await Task.Run(() => JsonConvert.DeserializeObject<PostResult>(jsonText));
                 headerData = new HeaderData() { Action = action, After = post?.After, Before = post?.Before, Message = CONST.Messages.SUCCESSFUL,
                                                 SubRedditName = subreddit, Remaining = 800, Reset = 400, Status = 0 };  

@@ -12,7 +12,7 @@ namespace RedditMetrics.DataLayer.Models
 
         [JsonPropertyName(CONST.STATUS)]
         [JsonIgnore]
-        public int Status { get; set; } = -1;
+        public int Status { get; set; } = -2;
 
         [JsonPropertyName(CONST.MESSAGE)]
         [JsonIgnore]

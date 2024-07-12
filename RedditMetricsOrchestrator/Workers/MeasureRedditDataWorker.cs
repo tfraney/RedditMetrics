@@ -1,59 +1,76 @@
 ﻿using RedditMetrics.Business;
+using RedditMetrics.DataLayer.Interfaces;
 using RedditMetrics.DataLayer.Models;
 
+using ERRMSG = RedditMetrics.DataLayer.FunctionConstants.ErrorMessages;
+using MSG = RedditMetrics.DataLayer.FunctionConstants.Messages;
+using COMMON = RedditMetrics.DataLayer.FunctionConstants;
 
 namespace RedditMetricsOrchestrator.Workers
 {
-    public class MeasureRedditDataWorker(ILogger logger) : IMeasureRedditDataWorker
+    public class MeasureRedditDataWorker(ILogger logger, IApiClientData clientData, string apiHost, string authStr, string actionStr) : IMeasureRedditDataWorker
     {
         private readonly ILogger _logger = logger;
+        private readonly IApiClientData _clientData = clientData;
 
-        public async Task Execute(string api, string topic,string cnt, string subreddit, string clienttoken, CancellationToken cancelToken)
+        public async Task Execute(string topic,string cnt, string subreddit, string client, int loop, CancellationToken cancelToken)
         {
+            Task.Delay(5000 * loop, cancelToken).Wait(cancelToken);
             int failedTries = 0;
-            _logger.LogInformation(@"Orchestrating metrics for subreddit {subreddit} - {topic}", subreddit,topic);
-            int lastDelay = 1;
+            _logger.LogInformation(MSG.WORKER_STARTBRANCH_LOG, subreddit,topic);
+            int lastDelay = 500;
+            bool ignoreAuth = false;
+            
             while (!cancelToken.IsCancellationRequested && failedTries < 20)
             {
-                string? failed = null;
-                using var x = new ApiConsumer<HeaderData>(_logger, api);
-                var tokenize = !string.IsNullOrWhiteSpace(clienttoken) ? $"&token={clienttoken}" : string.Empty;
+                string? failed = ERRMSG.WORKER_NOREQUESTDATA;
+                string[]? authset = [];
+                HeaderData? content = null;
+                HttpResponseMessage msg = new() {  StatusCode = System.Net.HttpStatusCode.NotFound };
 
-                var (content, msg) = await x.GetAsync(topic, $"api/{topic}?name={subreddit}&count={cnt}{tokenize}");
+
+                using var x = new ApiConsumer<HeaderData>(_logger, apiHost);
+                var token = _clientData?.GetToken(client, out authset);
+                
+                if (!ignoreAuth && (token != null) && token == string.Empty && authset != null && authset.Length == 5)
+                {                   
+                     (content, msg) = await x.GetAsync(COMMON.CommonMessages.AUTH_ACTION, string.Format(authStr, authset[0], authset[1], authset[2]));
+                     token = content?.TokenReturned;
+                     if (token != null) _clientData?.SetToken(client, token);
+                     if ((content?.Status ?? -2) < 0) failedTries = 100; 
+                }
+                else ignoreAuth = token == null && true;
+
+                //start executing http trigger for data
+                if (failedTries <= 20)                 
+                      (content, msg) = await x.GetAsync(topic, string.Format(actionStr, subreddit, token, cnt, topic));      
 
                 if (content != null)
                 {
                     if (content.Status < -1)
                     {
-                        _logger.LogError(@"Http Request Issule => Worker for {topic} : {sub} : {msg}",
-                                           topic, subreddit, content.Message);
-                        failed = msg.StatusCode.ToString();
+                        _logger.LogError(ERRMSG.WORKER_REQUESTISSUE, topic, subreddit, content.Message);
+                         failed = msg.StatusCode.ToString();
                     }
                     else if (content.Status == -1)
                     {
-                        _logger.LogWarning(@"Delay Warning (Too many calls) taking {} seconds to wait => Worker for {topic} : {sub} ",
-                                           content.Before, topic, subreddit);
-                        Task.Delay(Convert.ToInt32(content.Before) * 1000, cancelToken).Wait(cancelToken);
+                        _logger.LogWarning(ERRMSG.WORKER_LIMITEXCEEDED, content.Before, topic, subreddit);
+                         Task.Delay(Convert.ToInt32(content.Before) * 1000, cancelToken).Wait(cancelToken);
                     }
                     else
                     {
-                        if (content.SecondsDelay > lastDelay)
-                            _logger.LogWarning(@"Delay Warning (Thottling) to {time} => Worker for {topic} : {sub} ",
-                                              content.SecondsDelay, topic, subreddit);
-                        
-                        Task.Delay(content.SecondsDelay * 1000, cancelToken).Wait(cancelToken);
+                        failed = null;
+                        if (content.MilisecondsDelay > lastDelay) _logger.LogWarning(MSG.WORKER_DELAYWARNING_LOG,   content.MilisecondsDelay, topic, subreddit);                        
+                        Task.Delay(content.MilisecondsDelay, cancelToken).Wait(cancelToken);
                     }
-                    lastDelay = content.SecondsDelay;
+                    lastDelay = content.MilisecondsDelay;
                 }
-                else failed = msg?.StatusCode.ToString() ?? @"Empty Http Request";
+                else failed = msg?.StatusCode.ToString() ?? failed;
+
 
                 if (failed != null)
                 {
-                    if (failedTries++ == 20)                     
-                    {
-                        _logger.LogCritical(@"Persistent Error. Closing worker for this Reddit Http Reuest => Worker for {topic} : {sub} - {failure}",
-                                           topic, subreddit, failed);                        
-                    }
+                    if (failedTries++ == 20) _logger.LogCritical(ERRMSG.WORKER_CRITICAL_FAILURE,     topic, subreddit, failed);                                            
                     else Task.Delay(2500, cancelToken).Wait(cancelToken);
                 }
                 else failedTries = 0;
@@ -61,8 +78,9 @@ namespace RedditMetricsOrchestrator.Workers
         }
     }
 
+
     public interface IMeasureRedditDataWorker
     {
-        Task Execute(string api, string topic, string cnt, string subreddit, string clienttoken, CancellationToken cancelToken);
+        Task Execute(string topic, string cnt, string subreddit, string client, int loop,  CancellationToken cancelToken);
     }
 }

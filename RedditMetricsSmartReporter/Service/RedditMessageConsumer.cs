@@ -7,7 +7,6 @@ namespace RedditMetricsSmartReporter.Service
 
     public class HotRedditMessageConsumer(ILogger<HotRedditMessageConsumer> logger, HotConsumerWrapper wrapper) : RedditMessageConsumer(logger,wrapper) { }
     public class TopRedditMessageConsumer(ILogger<TopRedditMessageConsumer> logger, TopConsumerWrapper wrapper) : RedditMessageConsumer(logger, wrapper) { }
-
     public class NewRedditMessageConsumer(ILogger<NewRedditMessageConsumer> logger, NewConsumerWrapper wrapper) : RedditMessageConsumer(logger, wrapper) { }
 
     public abstract class RedditMessageConsumer(ILogger<RedditMessageConsumer> logger, IConsumerWrapper consumeWrapper) : BackgroundService, IDisposable

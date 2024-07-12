@@ -14,28 +14,25 @@ using CONST = RedditMetrics.DataLayer.FunctionConstants;
 using MESSAGES = RedditMetrics.DataLayer.FunctionConstants.Messages;
 using System;
 
+
 namespace RedditMetricsFuncs
 {
-    public  class TopPost(ILogger<TopPost> log, IProducerWrapper producer)
+    public  class Auth(ILogger<TopPost> log)
     {
-        private static readonly string _action = QUERYCONST.TOPACTION;
-        private static readonly string _logstring = MESSAGES.TOPVOTELOG;
+        private static readonly string _logstring = MESSAGES.AUTHLOG;
 
-        private readonly ILogger<TopPost> _log = log;      
-        private readonly IProducerWrapper _producer = producer;
+        private readonly ILogger<TopPost> _log = log; 
 
-        [Function(nameof(TopPost))]
+        [Function(nameof(Auth))]
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, CONST.GET, CONST.POST, Route = null)] HttpRequestData req)
         {
-            string MainAPI = Environment.GetEnvironmentVariable(CONST.READ_API);
-            string topNextPI = Environment.GetEnvironmentVariable(CONST.READ_API_NEXT);
-            string topNewAPI = Environment.GetEnvironmentVariable(CONST.READ_API_TOPNEW);
-
+            string authAPI = Environment.GetEnvironmentVariable(CONST.AUTH_API);
             using RequestParameterManager reqData = new(req);
-            using IRedditReader reader = new RedditReader(MainAPI, topNextPI, topNewAPI, null);
-            HeaderData result = await ReaderFunction.ExecuteSubRedditReader(reqData, _log, _producer, reader, _action, CONST.POSTS_TOP, _logstring);
+            using IRedditReader reader = new RedditReader(null,null,null, authAPI);
+            HeaderData result = (HeaderData) await ReaderFunction.PostAuthToReader(reqData, _log, reader, _logstring);
             return new OkObjectResult(result);
         }
+       
     }
 }
