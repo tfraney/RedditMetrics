@@ -55,6 +55,7 @@
             public const string LOGIN = @"login";      
             public const string COUNT = @"count";
 
+            public const string NEWTOPIC = @"NewPost";
             public const string NEWACTION = @"new.json";
             public const string TOPACTION = @"top.json";
             public const string HOTACTION = @"hot.json";
@@ -64,6 +65,8 @@
             public const string ORCH_CONF_APIHOST = @"apiHost";
             public const string ORCH_APICONF_AUTH = @"apiAuth";
             public const string OTCH_APICONF_ACTION = @"apiAction";
+            public const string OTCH_NEWAPICONF_ACTION = @"apiNewAction";
+            public const string OTCH_NEXTAPICONF_ACTION = @"apiNextAction";
         }
 
         public static class Messages
@@ -85,7 +88,11 @@
             public const string AUTH_STARTED = @"Reddit Api Authetication Started. ";
 
             public const string WORKER_STARTBRANCH_LOG = @"Orchestrating metrics for subreddit {subreddit} - {topic}";
+            public const string WORKER_NEW_LOG_COMPLETED = @"Orchestrating metrics for whole list of subreddit {subreddit} - {topic} is completed.";
+            public const string WORKER_STARTBRANCH_BEFORE_LOG = @"More metrics for subreddit {subreddit} - {topic} : Newest before {before}";
+            public const string WORKER_STARTBRANCH_AFTER_LOG = @"More metrics for subreddit {subreddit} - {topic} : next {cnt} After {after}";
             public const string WORKER_DELAYWARNING_LOG = @"Delay Warning (Thottling) to {time} miliseconds => Worker for {topic} : {sub}";
+            public const string WORKER_REC_PROC = @"{topic}{subreddit} - New Records to be processed - {cnt}";
 
             public const string ORCH_BEGIN_MSG = @"Beginning Orchestration of API Workers.";
             public const string ORCH_BEGIN_WORKER_MSG = @"Worker {topic}{sub} to start at: {time}";

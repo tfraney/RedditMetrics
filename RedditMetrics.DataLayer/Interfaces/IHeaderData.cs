@@ -5,7 +5,9 @@
         public string Action { get; set; }      
         public string SubRedditName { get; set; }     
         public string? After { get; set; } 
-        string? Before { get; set; } 
+        string? Before { get; set; }
+
+        int Dist { get; set; }
         int Status { get; set; }     
         string Message { get; set; }
         ITokenHeader? TokenData { get; set; }        

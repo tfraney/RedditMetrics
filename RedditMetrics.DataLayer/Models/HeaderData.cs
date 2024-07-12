@@ -17,6 +17,9 @@ namespace RedditMetrics.DataLayer.Models
         [JsonPropertyName(RESCONST.AFTER)]
         public string? After { get; set; }
 
+        [JsonPropertyName(RESCONST.DIST)]
+        public int Dist { get; set; } = 0;
+
         [JsonPropertyName(COMMON.TOKENDATA)]
         public ITokenHeader? TokenData { get; set;  } = new TokenHeader();    
 

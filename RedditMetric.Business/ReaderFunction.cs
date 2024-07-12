@@ -24,7 +24,7 @@ namespace RedditMetrics.Business
             try
             {
                 (queuedMessage, result) = reader == null? (null,result) :
-                                                           await reader.ReadQuery(logger, sub, logString, action, req.Authdata, cnt,req.Before, req.After);                
+                                                           await reader.ReadQuery(logger, sub, logString, action, req.Authdata, cnt,req.Before,req.Before != null? null : req.After);                
             }
             catch (Exception ex)
             {              

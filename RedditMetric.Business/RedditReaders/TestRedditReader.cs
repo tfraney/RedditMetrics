@@ -38,7 +38,8 @@ namespace RedditMetrics.Business.RedditReaders
                 if (string.IsNullOrEmpty(authdata)) { throw new AuthenticationException(); }
 
                 post = await Task.Run(() => JsonConvert.DeserializeObject<PostResult>(jsonText));
-                headerData = new HeaderData() { Action = action, After = post?.After, Before = post?.Before, Message = CONST.Messages.SUCCESSFUL,
+                headerData = new HeaderData() { Action =  action, After = action == CONST.Query.NEWACTION ? post?.After : null,
+                                                    Before = action == CONST.Query.NEWACTION ? post?.Before : null, Message = CONST.Messages.SUCCESSFUL,
                                                 SubRedditName = subreddit, Remaining = 800, Reset = 400, Status = 0 };  
             }
             catch (Exception ex)

@@ -15,7 +15,7 @@ namespace RedditMetricsSmartReporter.Managers
         {
             if (AuthorCount.TryGetValue(subreddit, out Dictionary<string, (string,int)>? value))
             {
-                return value.OrderByDescending(x => x)?.Select(x => new AuthorStackItem()
+                return value.OrderByDescending(x => x.Value.Item2)?.Select(x => new AuthorStackItem()
                 {
                      Author_Name = x.Value.Item1,
                      Author = x.Key,

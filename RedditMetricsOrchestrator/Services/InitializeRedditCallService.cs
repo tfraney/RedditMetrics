@@ -30,9 +30,12 @@ namespace RedditMetricsOrchestrator.Services
                     var host = config.GetValue<string>(QUERY.ORCH_CONF_APIHOST);
                     var authAction = config.GetValue<string>(QUERY.ORCH_APICONF_AUTH);
                     var dataAction = config.GetValue<string>(QUERY.OTCH_APICONF_ACTION);
+                    var nextDataAction = config.GetValue<string>(QUERY.OTCH_NEXTAPICONF_ACTION);
+                    var beforeDataAction = config.GetValue<string>(QUERY.OTCH_NEWAPICONF_ACTION);
 
                     if (myBrnchArray != null && myBrnchArray.Length > 0 && !string.IsNullOrWhiteSpace(host) &&
-                        clientData != null && !string.IsNullOrWhiteSpace(authAction) && !string.IsNullOrWhiteSpace(dataAction)) {
+                        clientData != null && !string.IsNullOrWhiteSpace(authAction) && !string.IsNullOrWhiteSpace(dataAction) &&
+                        !string.IsNullOrWhiteSpace(nextDataAction) && !string.IsNullOrWhiteSpace(beforeDataAction)) {
                         int loop = 0;
                         foreach (var item in myBrnchArray) 
                         {                 
@@ -41,8 +44,9 @@ namespace RedditMetricsOrchestrator.Services
                                 if (item != null && item.Length == 4)
                                 {
                                     _logger.LogInformation(MSG.ORCH_BEGIN_WORKER_MSG, item[1], item[0], DateTimeOffset.Now);                             
-                                    tasks.Add(new MeasureRedditDataWorker(_logger, clientData, host,authAction, dataAction)
-                                                                         .Execute(item[1], item[3], item[0], item[2], loop, stoppingToken));
+                                    tasks.Add(new MeasureRedditDataWorker(_logger, clientData, host,authAction, dataAction,nextDataAction,beforeDataAction)
+                                                                         .Execute(item[1], item[3], item[0], item[2], loop,null, stoppingToken));
+
                                 }
                                 else throw new Exception(ERRMSG.ORCH_WORKER_CONFIG_ERROR);
                             }
@@ -50,7 +54,8 @@ namespace RedditMetricsOrchestrator.Services
                             { 
                                 _logger.LogError(ERRMSG.ORCH_CRITICALTASK_ERROR, item[1], item[0], ae.InnerException?.Message ?? ae.Message); 
                             }
-                            catch (Exception ex) { _logger.LogError(ERRMSG.ORCH_CRITICALTASK_ERROR, item[1], item[0], ex.Message); }                        
+                            catch (Exception ex) { _logger.LogError(ERRMSG.ORCH_CRITICALTASK_ERROR, item[1], item[0], ex.Message); }
+                          
                         }
 
                         if (tasks.Count > 0)

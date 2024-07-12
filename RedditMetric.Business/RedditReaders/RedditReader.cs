@@ -32,8 +32,9 @@ namespace RedditMetrics.Business.RedditReaders
                     headerData = new HeaderData()
                     {
                         Action = action,
-                        After = postResult.After,
-                        Before = postResult.Before,
+                        Dist = postResult.Dist,
+                        After = action == CONST.Query.NEWACTION? postResult.After : null,
+                        Before = action == CONST.Query.NEWACTION ? postResult.Before : null,
                         Message = CONST.Messages.SUCCESSFUL,
                         SubRedditName = subreddit,
                         Remaining = headerData.Remaining,
@@ -49,7 +50,7 @@ namespace RedditMetrics.Business.RedditReaders
                 status = -2;
                 log = $"{log}.\nError ={ex.Message}";
                 msg = $"Failed. Reddit Api = {subreddit}-{action}";
-                headerData = new HeaderData() { Action = action, Message = msg,SubRedditName = subreddit, Status = -2, 
+                headerData = new HeaderData() { Action = action, Message = msg,SubRedditName = subreddit, Status = -2, Dist = 0,
                                                 TokenData = headerData?.TokenData ?? new TokenHeader() }; 
             }
            
